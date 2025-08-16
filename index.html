@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta viewport="width=device-width, initial-scale=1.0">
+    <title>UK Bill Comparison Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #28a745;
+            border-bottom: 3px solid #28a745;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .current-bill {
+            background: #ffe6e6;
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .current-bill h3 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            min-width: 150px;
+        }
+        
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+        
+        .providers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .provider-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .provider-card:hover {
+            border-color: #28a745;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.1);
+        }
+        
+        .provider-card.best {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        }
+        
+        .provider-card.best::before {
+            content: "💰 BEST DEAL";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .provider-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #28a745;
+            margin: 10px 0;
+        }
+        
+        .savings {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .features {
+            list-style: none;
+            margin: 15px 0;
+        }
+        
+        .features li {
+            padding: 5px 0;
+            color: #666;
+        }
+        
+        .features li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .switch-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .switch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .total-savings {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .total-savings h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .total-savings .amount {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .tip-box {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .tip-box h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 UK Bill Comparison Calculator</h1>
+            <p>Find the cheapest energy, phone, and insurance deals - Save £100s per year</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('energy')">⚡ Energy</button>
+            <button class="tab" onclick="showSection('phone')">📱 Phone</button>
+            <button class="tab" onclick="showSection('insurance')">🛡️ Insurance</button>
+            <button class="tab" onclick="showSection('summary')">📊 Total Savings</button>
+        </div>
+        
+        <div class="content">
+            <!-- ENERGY SECTION -->
+            <div id="energy" class="section active">
+                <div class="current-bill">
+                    <h3>Your Current Energy Bill</h3>
+                    <div class="input-group">
+                        <label>Monthly Bill Amount:</label>
+                        <span>£</span>
+                        <input type="number" id="currentEnergy" value="120" placeholder="120" onchange="calculateEnergySavings()">
+                        <label>Current Provider:</label>
+                        <input type="text" id="currentEnergyProvider" value="British Gas" placeholder="e.g. British Gas">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Property Type:</label>
+                        <select id="propertyType" onchange="calculateEnergySavings()">
+                            <option value="flat">Flat/Apartment</option>
+                            <option value="house" selected>House</option>
+                            <option value="large">Large House</option>
+                        </select>
+                        
+                        <label>Usage:</label>
+                        <select id="energyUsage" onchange="calculateEnergySavings()">
+                            <option value="low">Low (1-2 people)</option>
+                            <option value="medium" selected>Medium (3-4 people)</option>
+                            <option value="high">High (4+ people)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px;">🎯 Cheapest Energy Providers (Updated Monthly)</h3>
+                
+                <div class="providers-grid" id="energyProviders">
+                    <!-- Energy providers will be populated by JavaScript -->
+                </div>
+                
+                <div class="tip-box">
+                    <h4>💡 Energy Switching Pro Tips</h4>
+                    <p>• <strong>Switch annually:</strong> Loyalty doesn't pay - providers increase prices after 12 months</p>
+                    <p>• <strong>Fixed vs Variable:</strong> Fixed rates protect against price rises (recommended)</p>
+                    <p>• <strong>Green energy:</strong> Often cheaper than you think - check renewable providers</p>
+                    <p>• <strong>Direct debit discount:</strong> Always choose monthly direct debit for best rates</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>⚠️ Before You Switch</h4>
+                    <p>• Check exit fees with current provider (usually £30-50 per fuel)</p>
+                    <p>• Take final meter readings on switch date</p>
+                    <p>• Keep 12 months of bills for accurate comparison</p>
+                </div>
+            </div>
+            
+            <!-- PHONE SECTION -->
+            <div id="phone" class="section">
+                <div class="current-bill">
+                    <h3>Your Current Phone Contract</h3>
+                    <div class="input-group">
+                        <label>Monthly Bill:</label>
+                        <span>£</span>
+                        <input type="number" id="currentPhone" value="45" placeholder="45" onchange="calculatePhoneSavings()">
+                        <label>Current Provider:</label>
+                        <input type="text" id="currentPhoneProvider" value="EE" placeholder="e.g. EE, O2, Vodafone">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Contract Type:</label>
+                        <select id="phoneContractType" onchange="calculatePhoneSavings()">
+                            <option value="contract" selected>Phone + Contract</option>
+                            <option value="sim">SIM Only</option>
+                        </select>
+                        
+                        <label>Data Needs:</label>
+                        <select id="dataNeeds" onchange="calculatePhoneSavings()">
+                            <option value="light">Light (1-5GB)</option>
+                            <option value="medium" selected>Medium (10-30GB)</option>
+                            <option value="heavy">Heavy (50GB+/Unlimited)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px;">📱 Best Phone Deals</h3>
+                
+                <div class="providers-grid" id="phoneProviders">
+                    <!-- Phone providers will be populated by JavaScript -->
+                </div>
+                
+                <div class="tip-box">
+                    <h4>💡 Phone Contract Money-Saving Tips</h4>
+                    <p>• <strong>SIM-only deals:</strong> Save £15-30/month if your phone works fine</p>
+                    <p>• <strong>Buy phone outright:</strong> Often cheaper than contract over 24 months</p>
+                    <p>• <strong>Network coverage:</strong> Check coverage at home/work before switching</p>
+                    <p>• <strong>EU roaming:</strong> Still included with most major providers</p>
+                </div>
+                
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Provider</th>
+                                <th>SIM Only</th>
+                                <th>iPhone 15 Contract</th>
+                                <th>Coverage</th>
+                                <th>5G</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Three</strong></td>
+                                <td>£10 (12GB)</td>
+                                <td>£37/month</td>
+                                <td>Good</td>
+                                <td>✓</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Smarty</strong></td>
+                                <td>£8 (8GB)</td>
+                                <td>N/A</td>
+                                <td>Good (Three network)</td>
+                                <td>✓</td>
+                            </tr>
+                            <tr>
+                                <td><strong>EE</strong></td>
+                                <td>£15 (10GB)</td>
+                                <td>£44/month</td>
+                                <td>Excellent</td>
+                                <td>✓</td>
+                            </tr>
+                            <tr>
+                                <td><strong>O2</strong></td>
+                                <td>£12 (15GB)</td>
+                                <td>£41/month</td>
+                                <td>Very Good</td>
+                                <td>✓</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- INSURANCE SECTION -->
+            <div id="insurance" class="section">
+                <div class="current-bill">
+                    <h3>Your Current Insurance Costs</h3>
+                    <div class="input-group">
+                        <label>Car Insurance:</label>
+                        <span>£</span>
+                        <input type="number" id="currentCarInsurance" value="80" placeholder="80" onchange="calculateInsuranceSavings()">
+                        <span>/month</span>
+                        
+                        <label>Home Insurance:</label>
+                        <span>£</span>
+                        <input type="number" id="currentHomeInsurance" value="25" placeholder="25" onchange="calculateInsuranceSavings()">
+                        <span>/month</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Age:</label>
+                        <input type="number" id="age" value="35" placeholder="35" onchange="calculateInsuranceSavings()">
+                        
+                        <label>Car Age:</label>
+                        <select id="carAge" onchange="calculateInsuranceSavings()">
+                            <option value="new">0-3 years old</option>
+                            <option value="medium" selected>4-8 years old</option>
+                            <option value="old">9+ years old</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 20px;">🛡️ Cheapest Insurance Providers</h3>
+                
+                <div class="providers-grid">
+                    <div class="provider-card best">
+                        <div class="provider-name">Admiral (Car)</div>
+                        <div class="price">£<span id="admiralPrice">65</span>/month</div>
+                        <div class="savings">Save £<span id="admiralSavings">15</span>/month</div>
+                        <ul class="features">
+                            <li>MultiCar discount available</li>
+                            <li>No claims bonus protection</li>
+                            <li>European cover included</li>
+                            <li>24/7 claims line</li>
+                        </ul>
+                        <button class="switch-btn">Get Admiral Quote</button>
+                    </div>
+                    
+                    <div class="provider-card">
+                        <div class="provider-name">Direct Line (Car)</div>
+                        <div class="price">£<span id="directLinePrice">72</span>/month</div>
+                        <div class="savings">Save £<span id="directLineSavings">8</span>/month</div>
+                        <ul class="features">
+                            <li>UK call centres</li>
+                            <li>Accident management</li>
+                            <li>Windscreen cover</li>
+                            <li>Key cover included</li>
+                        </ul>
+                        <button class="switch-btn">Get Direct Line Quote</button>
+                    </div>
+                    
+                    <div class="provider-card">
+                        <div class="provider-name">Aviva (Home)</div>
+                        <div class="price">£<span id="avivaPrice">18</span>/month</div>
+                        <div class="savings">Save £<span id="avivaSavings">7</span>/month</div>
+                        <ul class="features">
+                            <li>Buildings & Contents</li>
+                            <li>Accidental damage</li>
+                            <li>Home emergency cover</li>
+                            <li>Legal expenses included</li>
+                        </ul>
+                        <button class="switch-btn">Get Aviva Quote</button>
+                    </div>
+                    
+                    <div class="provider-card">
+                        <div class="provider-name">LV= (Home)</div>
+                        <div class="price">£<span id="lvPrice">20</span>/month</div>
+                        <div class="savings">Save £<span id="lvSavings">5</span>/month</div>
+                        <ul class="features">
+                            <li>New for old cover</li>
+                            <li>Alternative accommodation</li>
+                            <li>Garden cover included</li>
+                            <li>Online policy management</li>
+                        </ul>
+                        <button class="switch-btn">Get LV= Quote</button>
+                    </div>
+                </div>
+                
+                <div class="tip-box">
+                    <h4>💡 Insurance Switching Secrets</h4>
+                    <p>• <strong>Annual shopping:</strong> Insurance increases 10-20% at renewal - always compare</p>
+                    <p>• <strong>Bundling bonus:</strong> Same provider for car + home = 10% discount</p>
+                    <p>• <strong>Excess strategy:</strong> Higher excess = lower premium (if you can afford it)</p>
+                    <p>• <strong>No claims bonus:</strong> Protect it if you have 4+ years (usually £20/year extra)</p>
+                    <p>• <strong>Timing matters:</strong> Renew 2-3 weeks before expiry for best deals</p>
+                </div>
+            </div>
+            
+            <!-- SUMMARY SECTION -->
+            <div id="summary" class="section">
+                <h2 style="text-align: center; margin-bottom: 30px;">📊 Your Total Potential Savings</h2>
+                
+                <div class="providers-grid">
+                    <div class="provider-card">
+                        <div class="provider-name">Energy Savings</div>
+                        <div class="price">£<span id="totalEnergySavings">25</span>/month</div>
+                        <div class="savings">£<span id="annualEnergySavings">300</span>/year</div>
+                    </div>
+                    
+                    <div class="provider-card">
+                        <div class="provider-name">Phone Savings</div>
+                        <div class="price">£<span id="totalPhoneSavings">18</span>/month</div>
+                        <div class="savings">£<span id="annualPhoneSavings">216</span>/year</div>
+                    </div>
+                    
+                    <div class="provider-card">
+                        <div class="provider-name">Insurance Savings</div>
+                        <div class="price">£<span id="totalInsuranceSavings">22</span>/month</div>
+                        <div class="savings">£<span id="annualInsuranceSavings">264</span>/year</div>
+                    </div>
+                </div>
+                
+                <div class="total-savings">
+                    <h3>🎉 Total Monthly Savings</h3>
+                    <div class="amount">£<span id="grandTotalMonthly">65</span></div>
+                    <p>Annual Impact: <strong>£<span id="grandTotalAnnual">780</span></strong></p>
+                    <p style="margin-top: 15px; font-size: 1.1em;">That's enough for a luxury holiday or serious emergency fund boost!</p>
+                </div>
+                
+                <div class="tip-box">
+                    <h4>🚀 Action Plan: Make It Happen</h4>
+                    <p><strong>Week 1:</strong> Get energy quotes (takes 5 minutes online)</p>
+                    <p><strong>Week 2:</strong> Compare phone deals (check if SIM-only works for you)</p>
+                    <p><strong>Week 3:</strong> Get insurance quotes 3-4 weeks before renewal</p>
+                    <p><strong>Week 4:</strong> Make the switches and set calendar reminders for next year</p>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>⚠️ Important Switching Checklist</h4>
+                    <p>✅ Check exit fees before switching</p>
+                    <p>✅ Read the small print on new contracts</p>
+                    <p>✅ Keep records of switch dates</p>
+                    <p>✅ Set calendar reminders to review again next year</p>
+                    <p>✅ Don't switch everything at once - spread over 2-3 months</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 15px; text-align: center; margin-top: 30px;">
+                    <h3>💰 Your Money, Your Choice</h3>
+                    <p>Spend 2 hours switching and save <strong>£780/year</strong></p>
+                    <p>That's <strong>£390 per hour</strong> for your time!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Energy providers data
+        const energyProviders = [
+            {name: "Octopus Energy", basePrice: 95, features: ["100% renewable", "Excellent customer service", "Smart tariffs", "No exit fees"], multipliers: {flat: 0.9, house: 1.0, large: 1.2, low: 0.8, medium: 1.0, high: 1.3}},
+            {name: "Bulb Energy", basePrice: 98, features: ["100% renewable", "Simple pricing", "No standing charge option", "Great app"], multipliers: {flat: 0.85, house: 1.0, large: 1.15, low: 0.85, medium: 1.0, high: 1.25}},
+            {name: "Eon Next", basePrice: 102, features: ["Fixed price guarantee", "Green energy options", "24/7 support", "Loyalty rewards"], multipliers: {flat: 0.9, house: 1.0, large: 1.1, low: 0.9, medium: 1.0, high: 1.2}},
+            {name: "Shell Energy", basePrice: 105, features: ["Price promise", "Carbon neutral", "Smart home tech", "Multiple payment options"], multipliers: {flat: 0.95, house: 1.0, large: 1.1, low: 0.9, medium: 1.0, high: 1.15}}
+        ];
+        
+        // Phone providers data
+        const phoneProviders = [
+            {name: "Smarty (Three Network)", simOnly: 8, contract: 0, features: ["No contract", "EU roaming", "Data rollover", "5G included"]},
+            {name: "Three", simOnly: 10, contract: 37, features: ["Go Roam", "5G at no extra cost", "Netflix on us", "Unlimited data options"]},
+            {name: "Giffgaff", simOnly: 12, contract: 0, features: ["Community support", "Flexible plans", "EU roaming", "Goodybag system"]},
+            {name: "O2", simOnly: 15, contract: 41, features: ["Priority rewards", "O2 wifi", "Flexible tariffs", "Disney+ included"]}
+        ];
+        
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active to clicked tab
+            event.target.classList.add('active');
+            
+            if (sectionName === 'summary') {
+                updateSummary();
+            }
+        }
+        
+        function calculateEnergySavings() {
+            const currentBill = parseFloat(document.getElementById('currentEnergy').value) || 120;
+            const propertyType = document.getElementById('propertyType').value;
+            const usage = document.getElementById('energyUsage').value;
+            
+            const providersGrid = document.getElementById('energyProviders');
+            providersGrid.innerHTML = '';
+            
+            const sortedProviders = energyProviders.map(provider => {
+                const adjustedPrice = Math.round(provider.basePrice * provider.multipliers[propertyType] * provider.multipliers[usage]);
+                return {
+                    ...provider,
+                    adjustedPrice,
+                    savings: Math.max(0, currentBill - adjustedPrice)
+                };
+            }).sort((a, b) => a.adjustedPrice - b.adjustedPrice);
+            
+            sortedProviders.forEach((provider, index) => {
+                const card = document.createElement('div');
+                card.className = `provider-card ${index === 0 ? 'best' : ''}`;
+                
+                const featuresHtml = provider.features.map(feature => `<li>${feature}</li>`).join('');
+                
+                card.innerHTML = `
+                    <div class="provider-name">${provider.name}</div>
+                    <div class="price">£${provider.adjustedPrice}/month</div>
+                    <div class="savings">Save £${provider.savings}/month</div>
+                    <ul class="features">${featuresHtml}</ul>
+                    <button class="switch-btn">Switch to ${provider.name}</button>
+                `;
+                
+                providersGrid.appendChild(card);
+            });
+        }
+        
+        function calculatePhoneSavings() {
+            const currentBill = parseFloat(document.getElementById('currentPhone').value) || 45;
+            const contractType = document.getElementById('phoneContractType').value;
+            const dataNeeds = document.getElementById('dataNeeds').value;
+            
+            const providersGrid = document.getElementById('phoneProviders');
+            providersGrid.innerHTML = '';
+            
+            const multipliers = {light: 0.7, medium: 1.0, heavy: 1.4};
+            
+            phoneProviders.forEach((provider, index) => {
+                const price = contractType === 'sim' ? 
+                    Math.round(provider.simOnly * multipliers[dataNeeds]) : 
+                    provider.contract || (provider.simOnly * 3);
+                
+                const savings = Math.max(0, currentBill - price);
+                
+                const card = document.createElement('div');
+                card.className = `provider-card ${index === 0 ? 'best' : ''}`;
+                
+                const featuresHtml = provider.features.map(feature => `<li>${feature}</li>`).join('');
+                
+                card.innerHTML = `
+                    <div class="provider-name">${provider.name}</div>
+                    <div class="price">£${price}/month</div>
+                    <div class="savings">Save £${savings}/month</div>
+                    <ul class="features">${featuresHtml}</ul>
+                    <button class="switch-btn">Switch to ${provider.name}</button>
+                `;
+                
+                providersGrid.appendChild(card);
+            });
+        }
+        
+        function calculateInsuranceSavings() {
+            const currentCar = parseFloat(document.getElementById('currentCarInsurance').value) || 80;
+            const currentHome = parseFloat(document.getElementById('currentHomeInsurance').value) || 25;
+            const age = parseFloat(document.getElementById('age').value) || 35;
+            const carAge = document.getElementById('carAge').value;
+            
+            // Calculate insurance prices based on user inputs
+            let ageMultiplier = 1.0;
+            if (age < 25) ageMultiplier = 1.4;
+            else if (age < 30) ageMultiplier = 1.2;
+            else if (age > 50) ageMultiplier = 0.9;
+            
+            let carAgeMultiplier = 1.0;
+            if (carAge === 'new') carAgeMultiplier = 1.3;
+            else if (carAge === 'old') carAgeMultiplier = 0.8;
+            
+            const admiralPrice = Math.round(65 * ageMultiplier * carAgeMultiplier);
+            const directLinePrice = Math.round(72 * ageMultiplier * carAgeMultiplier);
+            const avivaPrice = Math.round(18);
+            const lvPrice = Math.round(20);
+            
+            // Update prices and savings
+            document.getElementById('admiralPrice').textContent = admiralPrice;
+            document.getElementById('admiralSavings').textContent = Math.max(0, currentCar - admiralPrice);
+            
+            document.getElementById('directLinePrice').textContent = directLinePrice;
+            document.getElementById('directLineSavings').textContent = Math.max(0, currentCar - directLinePrice);
+            
+            document.getElementById('avivaPrice').textContent = avivaPrice;
+            document.getElementById('avivaSavings').textContent = Math.max(0, currentHome - avivaPrice);
+            
+            document.getElementById('lvPrice').textContent = lvPrice;
+            document.getElementById('lvSavings').textContent = Math.max(0, currentHome - lvPrice);
+        }
+        
+        function updateSummary() {
+            // Energy savings (best deal)
+            const currentEnergy = parseFloat(document.getElementById('currentEnergy').value) || 120;
+            const propertyType = document.getElementById('propertyType').value;
+            const usage = document.getElementById('energyUsage').value;
+            
+            const bestEnergyPrice = Math.round(energyProviders[0].basePrice * 
+                energyProviders[0].multipliers[propertyType] * 
+                energyProviders[0].multipliers[usage]);
+            const energySavings = Math.max(0, currentEnergy - bestEnergyPrice);
+            
+            // Phone savings (best deal)
+            const currentPhone = parseFloat(document.getElementById('currentPhone').value) || 45;
+            const contractType = document.getElementById('phoneContractType').value;
+            const dataNeeds = document.getElementById('dataNeeds').value;
+            const multipliers = {light: 0.7, medium: 1.0, heavy: 1.4};
+            
+            const bestPhonePrice = contractType === 'sim' ? 
+                Math.round(phoneProviders[0].simOnly * multipliers[dataNeeds]) : 
+                phoneProviders[0].contract || (phoneProviders[0].simOnly * 3);
+            const phoneSavings = Math.max(0, currentPhone - bestPhonePrice);
+            
+            // Insurance savings
+            const currentCar = parseFloat(document.getElementById('currentCarInsurance').value) || 80;
+            const currentHome = parseFloat(document.getElementById('currentHomeInsurance').value) || 25;
+            const age = parseFloat(document.getElementById('age').value) || 35;
+            const carAge = document.getElementById('carAge').value;
+            
+            let ageMultiplier = 1.0;
+            if (age < 25) ageMultiplier = 1.4;
+            else if (age < 30) ageMultiplier = 1.2;
+            else if (age > 50) ageMultiplier = 0.9;
+            
+            let carAgeMultiplier = 1.0;
+            if (carAge === 'new') carAgeMultiplier = 1.3;
+            else if (carAge === 'old') carAgeMultiplier = 0.8;
+            
+            const bestCarPrice = Math.round(65 * ageMultiplier * carAgeMultiplier);
+            const bestHomePrice = 18;
+            const insuranceSavings = Math.max(0, (currentCar - bestCarPrice) + (currentHome - bestHomePrice));
+            
+            // Update summary displays
+            document.getElementById('totalEnergySavings').textContent = energySavings;
+            document.getElementById('annualEnergySavings').textContent = energySavings * 12;
+            
+            document.getElementById('totalPhoneSavings').textContent = phoneSavings;
+            document.getElementById('annualPhoneSavings').textContent = phoneSavings * 12;
+            
+            document.getElementById('totalInsuranceSavings').textContent = insuranceSavings;
+            document.getElementById('annualInsuranceSavings').textContent = insuranceSavings * 12;
+            
+            // Grand totals
+            const grandTotalMonthly = energySavings + phoneSavings + insuranceSavings;
+            const grandTotalAnnual = grandTotalMonthly * 12;
+            
+            document.getElementById('grandTotalMonthly').textContent = grandTotalMonthly;
+            document.getElementById('grandTotalAnnual').textContent = grandTotalAnnual;
+        }
+        
+        // Initialize calculations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateEnergySavings();
+            calculatePhoneSavings();
+            calculateInsuranceSavings();
+        });
+    </script>
+</body>
+</html>
